@@ -39,6 +39,10 @@ function verify(dexptr, range, enable_verify_maps) {
 
         if (enable_verify_maps) {
             var maps_offset = dexptr.add(0x34).readUInt();
+            if (maps_offset === 0) {
+                return false
+            }
+
             var maps_address = dexptr.add(maps_offset);
             if (maps_address > range_end) {
                 return false
@@ -64,6 +68,9 @@ function verify(dexptr, range, enable_verify_maps) {
 rpc.exports = {
     memorydump: function memorydump(address, size) {
         return new NativePointer(address).readByteArray(size);
+    },
+    switchmode: function switchmode(bool){
+        enable_deep_search = bool;
     },
     scandex: function scandex() {
         var result = [];
@@ -94,9 +101,9 @@ rpc.exports = {
                             return
                         }
                         if (dex_base.readCString(4) != "dex\n" && verify(dex_base, range, true)) {
-                            var dex_size = match.address.add(0x20).readUInt();
+                            var dex_size = dex_base.add(0x20).readUInt();
                             result.push({
-                                "addr": match.address,
+                                "addr": dex_base,
                                 "size": dex_size
                             });
                         }
